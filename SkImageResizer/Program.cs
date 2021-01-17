@@ -22,14 +22,9 @@ namespace SkImageResizer
             // Sync
 
             imageProcess.Clean(destinationPath1);
-            int scale;
-            Console.WriteLine($"請輸入Scale:");
-            if (!int.TryParse(Console.ReadLine(), out scale)) return;
-
-            /*Console.WriteLine($"同步執行開始");
 
             sw.Start();
-            imageProcess.ResizeImages(sourcePath, destinationPath1, scale);
+            imageProcess.ResizeImages(sourcePath, destinationPath1, 2.0);
             sw.Stop();
 
             decimal result1 = sw.ElapsedMilliseconds;
@@ -39,13 +34,11 @@ namespace SkImageResizer
 
             imageProcess.Clean(destinationPath2);
 
-            Console.WriteLine($"非同步執行開始");
-
             sw.Restart();
 
             try
             {
-                await imageProcess.ResizeImagesAsync(sourcePath, destinationPath2, scale, cts.Token);
+                await imageProcess.ResizeImagesAsync(sourcePath, destinationPath2, 2.0);
             }
             catch (OperationCanceledException ex)
             {
