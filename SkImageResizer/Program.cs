@@ -50,6 +50,7 @@ namespace SkImageResizer
             catch (OperationCanceledException ex)
             {
                 Console.WriteLine($"Canceled: {ex}");
+                imageProcess.Clean(destinationPath2);
             }
             catch (Exception ex)
             {
