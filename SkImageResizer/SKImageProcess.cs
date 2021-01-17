@@ -54,29 +54,63 @@ namespace SkImageResizer
             {
                 Directory.CreateDirectory(destPath);
             }
-
-            await Task.Yield();
-
             var allFiles = FindImages(sourcePath);
+            List<Task> tasks = new List<Task>();
             foreach (var filePath in allFiles)
             {
-                var bitmap = SKBitmap.Decode(filePath);
-                var imgPhoto = SKImage.FromBitmap(bitmap);
-                var imgName = Path.GetFileNameWithoutExtension(filePath);
+                tasks.Add(Task.Run(() =>
+               {
+                   token.ThrowIfCancellationRequested();
+                   var bitmap = SKBitmap.Decode(filePath);
+                   var imgPhoto = SKImage.FromBitmap(bitmap);
+                   var imgName = Path.GetFileNameWithoutExtension(filePath);
+                       var imgPhoto = SKImage.FromBitmap(bitmap);
+                   var sourceWidth = imgPhoto.Width;
+                   var sourceHeight = imgPhoto.Height;
+                       var sourceWidth = imgPhoto.Width;
+                   var destinationWidth = (int)(sourceWidth * scale);
+                   var destinationHeight = (int)(sourceHeight * scale);
+                       var destinationWidth = (int)(sourceWidth * scale);
+                   token.ThrowIfCancellationRequested();
+                   using var scaledBitmap = bitmap.Resize(
+                       new SKImageInfo(destinationWidth, destinationHeight),
+                       SKFilterQuality.High);
+                   token.ThrowIfCancellationRequested();
+                   using var scaledImage = SKImage.FromBitmap(scaledBitmap);
+                   token.ThrowIfCancellationRequested();
+                   using var data = scaledImage.Encode(SKEncodedImageFormat.Jpeg, 100);
+                   token.ThrowIfCancellationRequested();
+                   using var s = File.OpenWrite(Path.Combine(destPath, imgName + ".jpg"));
+                   token.ThrowIfCancellationRequested();
+                   data.SaveTo(s);
 
-                var sourceWidth = imgPhoto.Width;
-                var sourceHeight = imgPhoto.Height;
 
-                var destinationWidth = (int)(sourceWidth * scale);
-                var destinationHeight = (int)(sourceHeight * scale);
+               }));
+            }
+            await Task.WhenAll(tasks);
+        }
 
-                using var scaledBitmap = bitmap.Resize(
-                    new SKImageInfo(destinationWidth, destinationHeight),
-                    SKFilterQuality.High);
-                using var scaledImage = SKImage.FromBitmap(scaledBitmap);
-                using var data = scaledImage.Encode(SKEncodedImageFormat.Jpeg, 100);
-                using var s = File.OpenWrite(Path.Combine(destPath, imgName + ".jpg"));
-                data.SaveTo(s);
+                if (token.IsCancellationRequested)
+                {
+                    if (Directory.Exists(destPath))
+                    {
+                        Clean(destPath);
+                    }
+                    break;
+                }
+                await Task.Delay(100);
+            }
+        }
+
+                if (token.IsCancellationRequested)
+                {
+                    if (Directory.Exists(destPath))
+                    {
+                        Clean(destPath);
+                    }
+                    break;
+                }
+                await Task.Delay(100);
             }
         }
 
