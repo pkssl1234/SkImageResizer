@@ -10,6 +10,8 @@ namespace SkImageResizer
 {
     public class SKImageProcess
     {
+        static bool IsDone = false;
+
         /// <summary>
         /// 進行圖片的縮放作業
         /// </summary>
